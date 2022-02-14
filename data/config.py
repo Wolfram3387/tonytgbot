@@ -9,13 +9,13 @@ admins = [
     868136575
 ]
 
-ip = os.getenv("ip")
+# ip = os.getenv("ip")
 
-aiogram_redis = {
-    'host': ip,
-}
-
-redis = {
-    'address': (ip, 6379),
-    'encoding': 'utf8'
-}
+# aiogram_redis = {
+#     'host': ip,
+# }
+#
+# redis = {
+#     'address': (ip, 6379),
+#     'encoding': 'utf8'
+# }
