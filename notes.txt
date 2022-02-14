@@ -1,0 +1,9 @@
+Чтобы создать новый handler для пользовательских чатов, нужно зайти в handlers/users и создать новую папку с говорящим
+названием или воспользоваться имеющейся. В папке необходимо прописать декоратор @dp.message_handler(), если хочется
+обрабатывать сообщения или иной декоратор для других типов событий.
+
+@dp.message_handler()
+async def <some_name>(message: types.Message):
+    await message.answer(text=<some_text>)
+
+НЕ ЗАБЫТЬ в  __init__ написать from .some_dir_name import some_obj
