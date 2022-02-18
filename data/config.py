@@ -1,4 +1,5 @@
 import os
+import logging
 
 from dotenv import load_dotenv
 
@@ -8,6 +9,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 admins = [
     868136575
 ]
+
+logging.basicConfig(level=logging.INFO)
 
 ip = os.getenv("ip")
 
