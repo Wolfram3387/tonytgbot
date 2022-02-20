@@ -1,4 +1,4 @@
-from loader import variants_db
+from loader import variants_db, users_db
 # import openpyxl
 #
 # book = openpyxl.open('/Users/Wolfram_3387/Desktop/ОГЭ ответы ФИПИ 2022.xlsx', read_only=True, data_only=True)
@@ -43,8 +43,9 @@ from loader import variants_db
 # for i in variants_db.select_all_variants():
 #     print(i)
 
-print(variants_db.select_variant(variant_id=1), variants_db.select_variant(variant_id=2), sep='\n')
-
+# print(variants_db.select_variant(variant_id=1), variants_db.select_variant(variant_id=2), sep='\n')
+for i in users_db.select_all_users():
+    print(i)
 
 
 
