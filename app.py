@@ -68,4 +68,4 @@ if __name__ == '__main__':
     thread = Thread(target=watch_notifications, kwargs=dict(dp=dp))    # 1 поток (дополнительный)
     thread.start()
     executor.start_polling(dp, on_startup=on_startup, on_shutdown=on_shutdown)    # 2 поток (основной)
-# some comment 123
+# some comment 1234
