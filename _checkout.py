@@ -44,3 +44,29 @@ from loader import variants_db
 #     print(i)
 
 print(variants_db.select_variant(variant_id=1), variants_db.select_variant(variant_id=2), sep='\n')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

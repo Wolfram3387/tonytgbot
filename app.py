@@ -68,6 +68,3 @@ if __name__ == '__main__':
     thread = Thread(target=watch_notifications, kwargs=dict(dp=dp))    # 1 поток (дополнительный)
     thread.start()
     executor.start_polling(dp, on_startup=on_startup, on_shutdown=on_shutdown)    # 2 поток (основной)
-# TODO
-# TODO переделай обращение к variants_db (потому что varint_id стал первым аргументом, сместив всё старое правее)
-# TODO (в папке contents всё изменено)

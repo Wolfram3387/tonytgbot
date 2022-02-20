@@ -19,7 +19,7 @@ class Database:
         cursor = connection.cursor()
         cursor.execute(sql, parameters)
 
-        connection.set_trace_callback(logger)
+        # connection.set_trace_callback(my_logger_as_function)
 
         data = None
         if commit:
@@ -140,10 +140,6 @@ class Database:
         return self.execute(sql, parameters=parameters, commit=True)
 
 
-def logger(statement):
-    print(f'{"="*50}\nExecuting:\n{statement}\n{"="*50}')
-
-
 class VariantsInfo:
     def __init__(self, path_to_db='data/variants.db'):
         self.path_to_db = path_to_db
@@ -158,8 +154,6 @@ class VariantsInfo:
         connection = self.connection
         cursor = connection.cursor()
         cursor.execute(sql, parameters)
-
-        connection.set_trace_callback(logger)
 
         data = None
         if commit:

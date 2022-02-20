@@ -1,18 +1,18 @@
-from aiogram import types
-from filters import IsPrivate, IsNotAdmin
-from loader import dp, users_db, variants_db
-from aiogram.dispatcher.filters.builtin import CommandHelp, CommandStart
-from utils.misc import rate_limit
 import sqlite3
+from aiogram import types
+from utils.misc import rate_limit
+from filters import IsPrivate, IsNotAdmin
 from aiogram.dispatcher import FSMContext
+from loader import dp, users_db, variants_db
 from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters.builtin import CommandHelp, CommandStart
 
-from keyboards.default import u_menu, a_menu
 from data.config import admins
+from keyboards.default import u_menu, a_menu
 
 
 # общий хендлер
-@dp.message_handler(Command('test_state'), IsPrivate(), state='*')
+@dp.message_handler(Command('state'), IsPrivate(), state='*')
 async def test_states(message: types.Message, state: FSMContext):
     """Информирует пользователя или админа о текущем сценарии и FSM данных"""
     state_name = await state.get_state()
@@ -42,13 +42,12 @@ async def help_for_user(message: types.Message):
 @dp.message_handler(CommandStart(), IsNotAdmin(), IsPrivate(), state='*')
 async def start_for_user(message: types.Message, state: FSMContext):
     """Команда /start для пользователя"""
-    name = message.from_user.full_name
     await state.finish()
-    await message.answer(f'Привет, {name}!', reply_markup=u_menu)
+    await message.answer(f'Привет, {message.from_user.full_name}!', reply_markup=u_menu)
     try:
         users_db.add_user(
             user_id=message.from_user.id,
-            name=name
+            name=message.from_user.full_name
         )
     except sqlite3.IntegrityError:
         pass
@@ -80,8 +79,8 @@ async def help_for_admin(message: types.Message):
     text = [
         'Список команд: ',
         '/menu - Показать меню',
-        '/test_state - Проверить состояние',
-        '/show_users - Показать id пользователей',
+        '/state - Проверить состояние',
+        '/users - Показать id пользователей',
         '/variants - Показать id вариантов'
     ]
     await message.answer('\n'.join(text))
@@ -100,7 +99,7 @@ async def show_admin_menu(message: types.Message, state: FSMContext):
     await message.answer('Меню 📒', reply_markup=a_menu)
 
 
-@dp.message_handler(Command('show_users'), IsPrivate(), user_id=admins, state='*')
+@dp.message_handler(Command('users'), IsPrivate(), user_id=admins, state='*')
 async def show_users(message: types.Message):
     """Показывает всех пользователей и их id для админа"""
     users = '\n'.join(['{0:>12} - {1:<}'.format(line[0], line[1]) for line in sorted(

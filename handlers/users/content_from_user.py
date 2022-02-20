@@ -1,20 +1,12 @@
 import json
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ContentType
 
-from data.config import admins
 from filters import IsPrivate, IsNotAdmin
-from keyboards.default import u_menu, u_cancel_1, u_finish_entering, u_variants_categories, u_cancel_2, a_menu, \
-    a_check_continue, a_cancel_1
-from loader import dp, bot, users_db, variants_db
+from keyboards.default import u_menu, u_cancel_1, u_finish_entering, u_variants_categories, u_cancel_2
+from loader import dp, users_db, variants_db
 from ._points_transfer import EGE_TRANSFER, EGE_POINTS_FOR_NUMBERS, OGE_TRANSFER, OGE_POINTS_FOR_NUMBERS, \
     MAX_PRIMARY_POINTS_FOR_OGE
-
-
-# ================================================================================================
-# ============================================== USERS ===========================================
-# ================================================================================================
 
 
 @dp.message_handler(IsNotAdmin(), IsPrivate(), content_types=['photo', 'document', 'text'], state=[
@@ -319,7 +311,7 @@ async def send_statistic(message: types.Message, state: FSMContext):
         await message.answer('Ваш вариант успешно отправлен на проверку, ожидайте результатов!', reply_markup=u_menu)
 
         # Добавляем в requests всю информацию по варианту и ждём проверки от админа
-        requests = line[9]
+        requests = json.loads(line[9])
         requests[f'oge_{variant_id}'] = {
             "photo_ids": user_data['photo_ids'] if 'photo_ids' in user_data else dict(),
             "file_ids": user_data['file_ids'] if 'file_ids' in user_data else dict(),
@@ -400,78 +392,3 @@ async def send_statistic(message: types.Message, state: FSMContext):
             await state.update_data(file_ids=new_file_ids)
 
         await message.reply('Файл успешно загружен', reply_markup=u_finish_entering)
-
-
-# =================================================================================================
-# ============================================== ADMINS ===========================================
-# =================================================================================================
-
-
-@dp.message_handler(IsPrivate(), user_id=admins, content_types=['text'], state=[
-    'SINGLE_how_many_points_were_received', 'NOT_SINGLE_how_many_points_were_received'
-])
-async def correction_db(message: types.Message, state: FSMContext):
-    """Админ отправляет сообщение о том, сколько баллов было получено учеником (при наличии решённой второй части)"""
-    text = message.text
-
-    if text == 'Отмена':
-        await state.finish()
-        await message.answer(text, reply_markup=a_menu)
-        return
-    try:
-        points_for_2_part = {}
-        for line in message.text.split('\n'):
-            line = line.strip()
-            number, points = line.split()
-            points_for_2_part[number] = int(points)
-        for i in ('13', '14', '15'):
-            if i not in points_for_2_part:
-                points_for_2_part[i] = 0
-    except ValueError:    # Обработка некорректного ввода ответов
-        await message.answer(f'Неправильный ввод, попробуйте ещё раз', reply_markup=a_cancel_1)
-        return
-
-    state_name = await state.get_state()
-    data = await state.get_data()
-    checking_student_id = data['checking_student_id']
-
-    line = users_db.select_user(user_id=checking_student_id)
-    requests = json.loads(line[9])
-    checking_student_name = line[1]
-    for key in requests:
-        if key.startswith('oge_'):
-            variant_info = requests[key]
-            tasks_solved = variant_info['tasks_solved'] + sum([1 if i != 0 else 0 for i in points_for_2_part.values()])
-            correct_answers = len(variant_info['correct_answers']) + 3
-            results = variant_info['results']
-            primary_points = variant_info['primary_points'] + sum(points_for_2_part.values())
-            max_primary_points = MAX_PRIMARY_POINTS_FOR_OGE
-            secondary_points = OGE_TRANSFER[primary_points]
-
-            # Отправляем долгожданные результаты вместе со второй частью ученику
-            await bot.send_message(checking_student_id, '\n'.join(
-                    f'{_number}) {_answer} - {"✅" if _result else "❌"}' for _number, _answer, _result in
-                    results) + f'\n13) {points_for_2_part["13"]}\n14) {points_for_2_part["14"]}\n15) '
-                               f'{points_for_2_part["15"]}'
-                    f'\n\nВы решили правильно {tasks_solved} из {correct_answers} задач!\n\n'
-                    f'Набрано баллов: {primary_points} из {max_primary_points},'
-                    f' что равно {round(primary_points / max_primary_points * 100, 1)}%\n\n'
-                    f'Оценка: {secondary_points}')
-            # TODO обновить статистику в БД
-
-            # Удаляем из requests вариант для проверки и очищаем state_data админа
-            await state.finish()
-            del requests[key]
-            users_db.update_data(user_id=checking_student_id, change=('requests', json.dumps(requests)))
-
-            if state_name == 'NOT_SINGLE_how_many_points_were_received':
-                await state.finish()
-                await state.set_state('next_check_or_stop')
-                await message.answer(f'Ученик {checking_student_name} оценен. Хотите проверить следующую работу?',
-                                     reply_markup=a_check_continue)
-
-            elif state_name == 'SINGLE_how_many_points_were_received':
-                await state.finish()
-                await message.answer(f'Ученик {checking_student_name} оценен', reply_markup=a_menu)
-
-            return
