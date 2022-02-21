@@ -98,8 +98,8 @@ async def correction_db(message: types.Message, state: FSMContext):
                         await state.set_state('next_check_or_stop')
                         await message.answer('Проверить следующего?', reply_markup=a_check_continue)
 
-                    del requests[key]
-                    users_db.update_data(user_id=line[0], change=('requests', json.dumps(requests)))
+                        del requests[key]
+                        users_db.update_data(user_id=line[0], change=('requests', json.dumps(requests)))
                     return
 
                 elif key.startswith('prog_') and state_name == 'how_to_check_programs':
@@ -393,11 +393,10 @@ async def correction_db(message: types.Message, state: FSMContext):
 ])
 async def correction_db(message: types.Message, state: FSMContext):
     """Админ отправляет сообщение о том, сколько баллов было получено учеником (при наличии решённой второй части)"""
-    text = message.text
 
-    if text == 'Отмена':
+    if message.text == 'Отмена':
         await state.finish()
-        await message.answer(text, reply_markup=a_menu)
+        await message.answer(message.text, reply_markup=a_menu)
         return
     try:
         points_for_2_part = {}
@@ -419,6 +418,7 @@ async def correction_db(message: types.Message, state: FSMContext):
     line = users_db.select_user(user_id=checking_student_id)
     requests = json.loads(line[9])
     checking_student_name = line[1]
+    print(requests)
     for key in requests:
         if key.startswith('oge_'):
             variant_info = requests[key]
