@@ -1,15 +1,56 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+
+class AdminButtons:
+    menu = 'Меню 📒'
+    cancel = 'Отмена'
+    delete = 'Удалить'
+    change = 'Изменить'
+    yes = 'Да'
+    no = 'Нет'
+    add = 'Добавить'
+    ege = 'ЕГЭ 📕'
+    oge = 'ОГЭ 📗'
+    programming = 'Программирование 👨🏻‍💻'
+
+    name = 'Имя'
+    timetable = 'Расписание'
+    preparing_for = 'К чему готовится'
+    achievements = 'Достижения'
+    delete_user = 'Удалить пользователя'
+
+    title = 'Название'
+    answers = 'Ответы'
+    additional = 'Дополнения'
+    source = 'Источник'
+    status = 'Статус'
+    delete_variant = 'Удалить вариант'
+
+    finish_newsletter = 'Завершить рассылку'
+    cancel_newsletter = 'Отменить рассылку'
+    check_all = 'Проверить все'
+    check_selectively = 'Проверить выборочно'
+    without_comment = 'Без комментария'
+    check_next_student = 'Проверить следующего ученика'
+    finish_checking = 'Завершить проверку'
+
+    edit_users_info = 'Редактировать информацию о пользователях'
+    check_homeworks = 'Проверить домашние работы'
+    edit_variants_info = 'Редактировать информацию о вариантах'
+    make_newsletter = 'Сделать рассылку 📣'
+    add_info_to_new_variant = 'Добавить информацию на новый вариант'
+
+
 a_menu = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Редактировать информацию о пользователях'), KeyboardButton('Проверить домашние работы')
+            KeyboardButton(AdminButtons.edit_users_info), KeyboardButton(AdminButtons.check_homeworks)
         ],
         [
-            KeyboardButton('Редактировать информацию о вариантах'), KeyboardButton('Сделать рассылку 📣')
+            KeyboardButton(AdminButtons.edit_variants_info), KeyboardButton(AdminButtons.make_newsletter)
         ],
         [
-            KeyboardButton('Добавить информацию на новый вариант')
+            KeyboardButton(AdminButtons.add_info_to_new_variant)
         ],
     ],
     resize_keyboard=True,
@@ -18,10 +59,10 @@ a_menu = ReplyKeyboardMarkup(
 a_what_to_check = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Варианты  ЕГЭ'), KeyboardButton('Варианты ОГЭ')
+            KeyboardButton(AdminButtons.ege), KeyboardButton(AdminButtons.oge)
         ],
         [
-            KeyboardButton('Программирование'), KeyboardButton('Меню 📒')
+            KeyboardButton(AdminButtons.programming), KeyboardButton(AdminButtons.menu)
         ],
         # [
         #     KeyboardButton('Другое'), KeyboardButton('Тестовые варианты')
@@ -33,13 +74,13 @@ a_what_to_check = ReplyKeyboardMarkup(
 a_edit_users_db = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Имя'), KeyboardButton('Расписание')
+            KeyboardButton(AdminButtons.name), KeyboardButton(AdminButtons.timetable)
         ],    # KeyboardButton('Валюта 1'), KeyboardButton('Валюта 2')
         [
-            KeyboardButton('К чему готовится'), KeyboardButton('Достижения')
+            KeyboardButton(AdminButtons.preparing_for), KeyboardButton(AdminButtons.achievements)
         ],
         [
-            KeyboardButton('Удалить пользователя'), KeyboardButton('Меню 📒')
+            KeyboardButton(AdminButtons.delete_user), KeyboardButton(AdminButtons.menu)
         ]
     ],
     resize_keyboard=True,
@@ -48,13 +89,13 @@ a_edit_users_db = ReplyKeyboardMarkup(
 a_check_oge = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Проверить все'),
+            KeyboardButton(AdminButtons.check_all),
         ],
         [
-             KeyboardButton('Проверить выборочно')
+             KeyboardButton(AdminButtons.check_selectively)
         ],
         [
-            KeyboardButton('Отмена')
+            KeyboardButton(AdminButtons.cancel)
         ]
     ]
 )
@@ -62,13 +103,13 @@ a_check_oge = ReplyKeyboardMarkup(
 a_edit_timetable_or_achievements = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Удалить')
+            KeyboardButton(AdminButtons.delete)
         ],
         [
-            KeyboardButton('Добавить')
+            KeyboardButton(AdminButtons.add)
         ],
         [
-            KeyboardButton('Отмена')
+            KeyboardButton(AdminButtons.cancel)
         ]
     ],
     resize_keyboard=True,
@@ -77,13 +118,13 @@ a_edit_timetable_or_achievements = ReplyKeyboardMarkup(
 a_delete_or_change = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Удалить')
+            KeyboardButton(AdminButtons.delete)
         ],
         [
-            KeyboardButton('Изменить')
+            KeyboardButton(AdminButtons.change)
         ],
         [
-            KeyboardButton('Отмена')
+            KeyboardButton(AdminButtons.cancel)
         ]
     ],
     resize_keyboard=True,
@@ -92,10 +133,10 @@ a_delete_or_change = ReplyKeyboardMarkup(
 a_yes_or_not = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Да')
+            KeyboardButton(AdminButtons.yes)
         ],
         [
-            KeyboardButton('Нет')
+            KeyboardButton(AdminButtons.no)
         ]
     ],
     resize_keyboard=True,
@@ -104,10 +145,10 @@ a_yes_or_not = ReplyKeyboardMarkup(
 a_delete_user_or_not = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Удалить')
+            KeyboardButton(AdminButtons.delete)
         ],
         [
-            KeyboardButton('Отмена')
+            KeyboardButton(AdminButtons.cancel)
         ]
     ],
     resize_keyboard=True,
@@ -116,7 +157,7 @@ a_delete_user_or_not = ReplyKeyboardMarkup(
 a_no_comment = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Без комментария')
+            KeyboardButton(AdminButtons.without_comment)
         ],
     ],
     resize_keyboard=True,
@@ -125,13 +166,13 @@ a_no_comment = ReplyKeyboardMarkup(
 a_edit_variants_db = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Название'), KeyboardButton('Ответы')
+            KeyboardButton(AdminButtons.title), KeyboardButton(AdminButtons.answers)
         ],
         [
-            KeyboardButton('Дополнения'), KeyboardButton('Источник'), KeyboardButton('Статус')
+            KeyboardButton(AdminButtons.additional), KeyboardButton(AdminButtons.source), KeyboardButton(AdminButtons.status)
         ],
         [
-            KeyboardButton('Удалить вариант'), KeyboardButton('Меню 📒')
+            KeyboardButton(AdminButtons.delete_variant), KeyboardButton(AdminButtons.menu)
         ]
     ],
     resize_keyboard=True,
@@ -140,7 +181,7 @@ a_edit_variants_db = ReplyKeyboardMarkup(
 a_cancel_1 = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Отмена')
+            KeyboardButton(AdminButtons.cancel)
         ]
     ],
     resize_keyboard=True,
@@ -149,10 +190,10 @@ a_cancel_1 = ReplyKeyboardMarkup(
 a_finish_newsletter = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Завершить рассылку')
+            KeyboardButton(AdminButtons.finish_newsletter)
         ],
         [
-            KeyboardButton('Отменить рассылку')
+            KeyboardButton(AdminButtons.cancel_newsletter)
         ]
     ],
     resize_keyboard=True,
@@ -161,10 +202,10 @@ a_finish_newsletter = ReplyKeyboardMarkup(
 a_check_continue = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton('Проверить следующего ученика')
+            KeyboardButton(AdminButtons.check_next_student)
         ],
         [
-            KeyboardButton('Завершить проверку')
+            KeyboardButton(AdminButtons.finish_checking)
         ]
     ],
     resize_keyboard=True,

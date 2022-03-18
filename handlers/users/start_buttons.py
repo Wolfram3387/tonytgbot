@@ -1,12 +1,14 @@
 import json
+
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContext
 
 from data.config import admins
 from filters import IsPrivate, IsNotAdmin
+from handlers.users.functions import add_to_db
 from loader import dp, users_db, variants_db
 from keyboards.default import u_theory, u_menu, u_variants_categories, u_cancel_1, a_edit_users_db, a_cancel_1, \
-    a_edit_variants_db, a_menu
+    a_edit_variants_db, a_menu, AdminButtons, UserButtons
 
 
 # ================================================================================================
@@ -14,39 +16,40 @@ from keyboards.default import u_theory, u_menu, u_variants_categories, u_cancel_
 # ================================================================================================
 
 
-@dp.message_handler(IsPrivate(), IsNotAdmin(), text='Меню 📒', state='*')
+@dp.message_handler(IsPrivate(), IsNotAdmin(), text=UserButtons.menu, state='*')
 async def show_menu(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer(message.text, reply_markup=u_menu)
 
 
-@dp.message_handler(IsPrivate(), IsNotAdmin(), text='Теория 🔎')
+@dp.message_handler(IsPrivate(), IsNotAdmin(), text=UserButtons.theory)
 async def show_theory(message: types.Message):
     await message.answer('Выбери раздел', reply_markup=u_theory)
 
 
-@dp.message_handler(IsPrivate(), IsNotAdmin(), text='Статистика 📊')
+@dp.message_handler(IsPrivate(), IsNotAdmin(), text=UserButtons.statistic)
 async def send_statistic(message: types.Message):
     await message.answer('Пока сбор статистики не работает')
 
 
-@dp.message_handler(IsPrivate(), IsNotAdmin(), text='Отправить ответы 📩')
+@dp.message_handler(IsPrivate(), IsNotAdmin(), text=UserButtons.send_answers)
 async def send_answers(message: types.Message, state: FSMContext):
+    await add_to_db(message)    # TODO УБРАТЬ в скором времени
     await state.set_state('choice_of_variant_category')
     await message.answer('Выберите категорию варианта, на который Вы хотите отправить ответы',
                          reply_markup=u_variants_categories)
 
 
 @dp.message_handler(IsPrivate(), IsNotAdmin(), text=[
-    'Вариант в формате ЕГЭ 📕', 'Вариант в формате ОГЭ 📗', 'Обычный тест 📔', 'Вариант по программированию 👨🏻‍💻',
-    'Другое 📓'], state='choice_of_variant_category')
+    UserButtons.format_ege, UserButtons.format_oge, UserButtons.format_test, UserButtons.format_programming,
+    UserButtons.format_other], state='choice_of_variant_category')
 async def request_id_or_title(message: types.Message, state: FSMContext):
     """Отправляет ID и названия вариантов из категории, выбранной пользователем.
     Запрашивает ID или название варианта, на который пользователь хочет отправить ответы"""
 
-    association = {'Вариант в формате ЕГЭ 📕': 'EGE', 'Вариант в формате ОГЭ 📗': 'OGE', 'Обычный тест 📔': 'TEST',
-                   'Вариант по программированию 👨🏻‍💻': 'PROG', 'Другое 📓': 'OTHER'}
-    if message.text in ['Вариант в формате ЕГЭ 📕', 'Вариант в формате ОГЭ 📗', 'Обычный тест 📔']:
+    association = {UserButtons.format_ege: 'EGE', UserButtons.format_oge: 'OGE', UserButtons.format_test: 'TEST',
+                   UserButtons.format_programming: 'PROG', UserButtons.format_other: 'OTHER'}
+    if message.text in [UserButtons.format_ege, UserButtons.format_oge, UserButtons.format_test]:
         await state.set_state('getting_variant_title')
 
         variants = '\n'.join([f'{line[0]} - {line[1]}' for line in sorted(
@@ -55,14 +58,14 @@ async def request_id_or_title(message: types.Message, state: FSMContext):
         await message.answer(
             'Отправьте мне ID или полное название варианта, на который Вы хотите дать ответы', reply_markup=u_cancel_1)
 
-    elif message.text == 'Вариант по программированию 👨🏻‍💻':
+    elif message.text == UserButtons.format_programming:
         await state.set_state('input_of_files_with_programs')
         await message.answer(
             'Отправьте мне файлы с программами (имя файла должно соответствовать номеру задачи или в'
             ' программах должны быть комментарии, обозначающие номер/название задачи)', reply_markup=u_cancel_1
         )
 
-    elif message.text == 'Другое 📓':
+    elif message.text == UserButtons.format_other:
         pass
 
 
@@ -71,15 +74,15 @@ async def request_id_or_title(message: types.Message, state: FSMContext):
 # =================================================================================================
 
 
-@dp.message_handler(IsPrivate(), text=['Редактировать информацию о пользователях',
-                                       'Редактировать информацию о вариантах'], user_id=admins)
+@dp.message_handler(IsPrivate(), text=[AdminButtons.edit_users_info,
+                                       AdminButtons.edit_variants_info], user_id=admins)
 async def edit_selection(message: types.Message, state: FSMContext):
     text = message.text
-    if text == 'Редактировать информацию о пользователях':
+    if text == AdminButtons.edit_users_info:
         await state.set_state('entering_id_to_editing_UsersInfo')
         await message.answer(
             'Отправьте мне id пользователя, у которого Вы хотите что-то изменить', reply_markup=a_cancel_1)
-    elif text == 'Редактировать информацию о вариантах':
+    elif text == AdminButtons.edit_variants_info:
         await state.set_state('entering_title_to_editing_VariantsInfo')
         await message.answer(
             'Отправьте мне id или название варианта, в котором Вы хотите что-то изменить', reply_markup=a_cancel_1)
@@ -91,14 +94,14 @@ async def check_variant_or_user_id(message: types.Message, state: FSMContext):
     """Получение ID пользователя или варианта для их последующего изменения в БД"""
     if message.text in 'Отмена':
         await state.finish()
-        await message.answer('Меню 📒', reply_markup=a_menu)
+        await message.answer(UserButtons.menu, reply_markup=a_menu)
         return
 
     state_name = await state.get_state()
     if state_name == 'entering_id_to_editing_UsersInfo':
         try:
             line = users_db.select_user(user_id=int(message.text))
-            tt = json.loads(line[2])    # tt - timetable
+            tt = line[2]    # tt - timetable
             student_name = line[1]
             msg = (
                 f'Пользователь: {student_name}',
