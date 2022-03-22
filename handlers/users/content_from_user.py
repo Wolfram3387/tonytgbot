@@ -124,7 +124,8 @@ async def send_statistic(message: types.Message, state: FSMContext):
         await message.answer(message.text, reply_markup=u_menu)
         return
 
-    variant_id, variant_title, *_ = variants_db.select_variant(variant_id=message.text, title=message.text)
+    variant_line = variants_db.select_variant(variant_id=message.text, title=message.text)
+    variant_id, variant_title = variant_line[0], variant_line[1]
 
     for variant_info in variants_db.select_all_variants():
         if variant_info[1].lower() == variant_title or variant_info[0] == variant_id:

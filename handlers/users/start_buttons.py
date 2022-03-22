@@ -1,5 +1,3 @@
-import json
-
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContext
 
@@ -134,8 +132,8 @@ async def check_variant_or_user_id(message: types.Message, state: FSMContext):
         if not line:
             await message.answer(f'Вариант "{message.text}" не найден, попробуйте ещё раз')
             return
-        answers = '\n'.join(f'{number}) {answer}' for number, answer in json.loads(line[2]).items())
-        additional = '\n'.join(f'{name} — {value}' for name, value in json.loads(line[6]).items())
+        answers = '\n'.join(f'{number}) {answer}' for number, answer in line[2].items())
+        additional = '\n'.join(f'{name} — {value}' for name, value in line[6].items())
         await state.set_state('selection_for_editing_in_the_VariantsInfo')
         await state.update_data(variant_line=line)
         await message.answer(
