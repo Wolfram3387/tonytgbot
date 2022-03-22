@@ -22,3 +22,5 @@ redis = {
     'address': (ip, 6379),
     'encoding': 'utf8'
 }
+
+URI = os.getenv("URI")

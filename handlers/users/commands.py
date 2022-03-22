@@ -1,7 +1,7 @@
-import sqlite3
 from aiogram import types
 from utils.misc import rate_limit
 from filters import IsPrivate, IsNotAdmin
+from sqlalchemy.exc import IntegrityError
 from aiogram.dispatcher import FSMContext
 from loader import dp, users_db, variants_db
 from aiogram.dispatcher.filters import Command
@@ -9,6 +9,7 @@ from aiogram.dispatcher.filters.builtin import CommandHelp, CommandStart
 
 from data.config import admins
 from keyboards.default import u_menu, a_menu
+from keyboards.default import AdminButtons, UserButtons
 
 
 # общий хендлер
@@ -49,7 +50,7 @@ async def start_for_user(message: types.Message, state: FSMContext):
             user_id=message.from_user.id,
             name=message.from_user.full_name
         )
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         pass
 
 
@@ -57,7 +58,7 @@ async def start_for_user(message: types.Message, state: FSMContext):
 async def show_user_menu(message: types.Message, state: FSMContext):
     """Показывает раскладку меню для пользователя"""
     await state.finish()
-    await message.answer('Меню 📒', reply_markup=u_menu)
+    await message.answer(UserButtons.menu, reply_markup=u_menu)
 
 
 @dp.message_handler(Command('variants'), IsPrivate(), state='*')
@@ -66,6 +67,13 @@ async def show_variants(message: types.Message):
     variants = '\n'.join([f'{line[0]} - {line[1]}' for line in
                           sorted(variants_db.select_all_variants(), key=lambda line: int(line[0]))])
     await message.answer(f'Все варианты:\n{variants}')
+
+
+@dp.message_handler(Command('whatsnew'), IsPrivate(), state='*')
+async def whats_new(message: types.Message):
+    """Показывает, что добавилось в текущем обновлении"""
+    with open('whats_new.txt', encoding='utf8') as file:
+        await message.answer(file.read())
 
 
 # =================================================================================================
@@ -77,7 +85,7 @@ async def show_variants(message: types.Message):
 async def help_for_admin(message: types.Message):
     """Команда /help для админа"""
     text = [
-        'Список команд: ',
+        'Список команд для админа: ',
         '/menu - Показать меню',
         '/state - Проверить состояние',
         '/users - Показать id пользователей',
@@ -96,7 +104,7 @@ async def start_for_admin(message: types.Message):
 async def show_admin_menu(message: types.Message, state: FSMContext):
     """Показывает раскладку меню для админа"""
     await state.finish()
-    await message.answer('Меню 📒', reply_markup=a_menu)
+    await message.answer(AdminButtons.menu, reply_markup=a_menu)
 
 
 @dp.message_handler(Command('users'), IsPrivate(), user_id=admins, state='*')

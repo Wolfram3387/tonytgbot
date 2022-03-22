@@ -1,6 +1,6 @@
-from utils.db_api.sqlite import Database
+from utils.db_api.postgres import UsersInfo
 
-db = Database()
+db = UsersInfo()
 testing_persons = (
     (1, 'Kirill'),
     (2, 'Daniel'),

@@ -1,35 +1,35 @@
-import json
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from filters import IsPrivate
-from keyboards.default import a_menu, a_cancel_1, a_edit_timetable_or_achievements, a_yes_or_not, a_edit_users_db
+from keyboards.default import a_menu, a_cancel_1, a_edit_timetable_or_achievements, a_yes_or_not, a_edit_users_db, \
+    AdminButtons, UserButtons
 from loader import dp, users_db
 from data.config import admins
 
 
 @dp.message_handler(IsPrivate(), user_id=admins, state='selection_for_editing_in_the_UsersInfo', text=[
-    'Имя', 'Валюта 1', 'Валюта 2', 'К чему готовится', 'Достижения', 'Расписание', 'Удалить пользователя', 'Меню 📒'
+    AdminButtons.name, 'Валюта 1', 'Валюта 2', AdminButtons.preparing_for, AdminButtons.achievements, AdminButtons.timetable, AdminButtons.delete_user, UserButtons.menu
 ])
 async def correction_db(message: types.Message, state: FSMContext):
     text = message.text
-    if text == 'Меню 📒':
+    if text == UserButtons.menu:
         await state.finish()
-        await message.answer('Меню 📒', reply_markup=a_menu)
+        await message.answer(UserButtons.menu, reply_markup=a_menu)
         return
 
-    if text == 'Имя':
+    if text == AdminButtons.name:
         await state.set_state('editing_name')
         await message.answer(f'Отправьте мне его новое имя', reply_markup=a_cancel_1)
 
-    elif text == 'К чему готовится':
+    elif text == AdminButtons.preparing_for:
         await state.set_state('editing_preparing_for')
         await message.answer('Отправьте мне к чему он теперь готовится:\n\nEGE или OGE', reply_markup=a_cancel_1)
 
-    elif text == 'Достижения':
+    elif text == AdminButtons.achievements:
         data = await state.get_data()
         line = users_db.select_user(user_id=data['student_id'])
-        achievements = json.loads(line[5])
+        achievements = line[5]
         msg = [f'Текущий список достижений ученика {data["student_name"]}:']
         for achievement, count in achievements.items():
             msg.append(f'    {achievement}: {count}')
@@ -50,12 +50,12 @@ async def correction_db(message: types.Message, state: FSMContext):
         # TODO доделать
         await message.answer('Пока эта фишка не применяется')
 
-    elif text == 'Расписание':
+    elif text == AdminButtons.timetable:
         await state.set_state('what_to_change_in_the_timetable')
         await message.answer('Удалить что-то из расписания или добавить?',
                              reply_markup=a_edit_timetable_or_achievements)
 
-    elif text == 'Удалить пользователя':
+    elif text == AdminButtons.delete_user:
         await state.set_state('delete_user_yes_or_not')
         data = await state.get_data()
         await message.answer(f'Вы действительно хотите удалить из базы данных пользователя {data["student_name"]}?',
@@ -63,7 +63,7 @@ async def correction_db(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(IsPrivate(), user_id=admins, text=[
-    'Удалить', 'Добавить', 'Отмена'], state='add_or_delete_achievements')
+    AdminButtons.delete, AdminButtons.add, 'Отмена'], state='add_or_delete_achievements')
 async def blablabla(message: types.Message, state: FSMContext):
     text = message.text
     if text == 'Отмена':
@@ -73,12 +73,12 @@ async def blablabla(message: types.Message, state: FSMContext):
 
     data = await state.get_data()
     name = data['student_name']
-    if text == 'Добавить':
+    if text == AdminButtons.add:
         await state.set_state('add_achievement')
         await message.answer(f'Отправьте мне название достижения, которое Вы хотите добавить пользователю {name}',
                              reply_markup=a_cancel_1)
 
-    elif text == 'Удалить':
+    elif text == AdminButtons.delete:
         await state.set_state('delete_achievement')
         await message.answer(f'Отправьте мне название достижения, которое Вы хотите убрать у пользователя'
                              f' {name}\n(это достижение уберётся только 1 раз)', reply_markup=a_cancel_1)
@@ -96,7 +96,7 @@ async def blablabla(message: types.Message, state: FSMContext):
     state_name = await state.get_state()
     data = await state.get_data()
     line = users_db.select_user(user_id=data['student_id'])
-    achievements = json.loads(line[5])
+    achievements = line[5]
     name = data['student_name']
 
     if state_name == 'add_achievement':
@@ -104,7 +104,7 @@ async def blablabla(message: types.Message, state: FSMContext):
             achievements[text] += 1
         else:
             achievements[text] = 1
-        users_db.update_data(user_id=data['student_id'], change=('achievements', json.dumps(achievements)))
+        users_db.update_data(user_id=data['student_id'], achievements=achievements)
 
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer(f'Достижение {text} успешно добавлено пользователю {name}\n(теперь у него их'
@@ -118,25 +118,25 @@ async def blablabla(message: types.Message, state: FSMContext):
                                  f'{achievements[text]})', reply_markup=a_edit_users_db)
             if achievements[text] == 0:
                 del achievements[text]
-            users_db.update_data(user_id=data['student_id'], change=('achievements', json.dumps(achievements)))
+            users_db.update_data(user_id=data['student_id'], achievements=achievements)
         except KeyError:
             await message.answer(f'Достижения {text} нет у пользователя {name}, попробуйте ещё раз')
 
 
-@dp.message_handler(IsPrivate(), user_id=admins, text=['Да', 'Нет'], state='delete_user_yes_or_not')
+@dp.message_handler(IsPrivate(), user_id=admins, text=[AdminButtons.yes, AdminButtons.no], state='delete_user_yes_or_not')
 async def blablabla(message: types.Message, state: FSMContext):
-    if message.text == 'Да':
+    if message.text == AdminButtons.yes:
         data = await state.get_data()
         users_db.delete_user(user_id=data['student_id'])
         await state.finish()
         await message.answer(f'Пользователь {data["student_name"]} удалён', reply_markup=a_menu)
-    elif message.text == 'Нет':
+    elif message.text == AdminButtons.no:
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer('Хорошо, не удаляю', reply_markup=a_edit_users_db)
 
 
 @dp.message_handler(IsPrivate(), user_id=admins, text=[
-    'Удалить', 'Добавить', 'Отмена'], state='what_to_change_in_the_timetable')
+    AdminButtons.delete, AdminButtons.add, 'Отмена'], state='what_to_change_in_the_timetable')
 async def blablabla(message: types.Message, state: FSMContext):
     text = message.text
 
@@ -145,14 +145,14 @@ async def blablabla(message: types.Message, state: FSMContext):
         await message.answer('Отмена', reply_markup=a_edit_users_db)
         return
 
-    if text == 'Удалить':
+    if text == AdminButtons.delete:
         await state.set_state('deleting_in_timetable')
         await message.answer(
             'Отправьте мне день/дни, который(-ые) Вы хотите удалить из расписания в формате:\n'
             'понедельник, среда, ...\n\nИЛИ\n\nпн, ср, сб, ...\n\nЛибо всё просто через пробел, либо через '
             'запятую с пробелом', reply_markup=a_cancel_1)
 
-    elif text == 'Добавить':
+    elif text == AdminButtons.add:
         await state.set_state('adding_in_timetable')
         await message.answer(
             'Отправьте мне день/дни, который(-ые) Вы хотите добавить в расписание в формате:\n'
@@ -187,7 +187,7 @@ async def correction_db(message: types.Message, state: FSMContext):
             new_name = text
             if new_name == '':
                 raise ValueError
-            users_db.update_data(user_id=user_id, change=('name', new_name))
+            users_db.update_data(user_id=user_id, name=new_name)
             await state.set_state('selection_for_editing_in_the_UsersInfo')
             await state.update_data(student_name=new_name)
             await message.answer(f'Полное имя обновлено!\nНовое имя пользователя: {new_name}',
@@ -203,7 +203,7 @@ async def correction_db(message: types.Message, state: FSMContext):
 
     elif state_name == 'editing_preparing_for':
         preparation_for = message.text
-        users_db.update_data(user_id=user_id, change=('preparation_for', preparation_for))
+        users_db.update_data(user_id=user_id, preparation_for=preparation_for)
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer(
             f'Статус подготовки ученика {name} изменён!\nТеперь он готовится к: «{preparation_for}»',
@@ -211,19 +211,19 @@ async def correction_db(message: types.Message, state: FSMContext):
 
     elif state_name == 'editing_achievements':
         line = users_db.select_user(user_id=user_id)
-        achievements = json.loads(line[5])
+        achievements = line[5]
         if text in achievements:
             achievements[text] += 1
         else:
             achievements[text] = 1
-        users_db.update_data(user_id=user_id, change=('achievements', json.dumps(achievements)))
+        users_db.update_data(user_id=user_id, achievements=achievements)
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer(f'Достижение «{text}» успешно добавлено пользователю {name}', reply_markup=a_edit_users_db)
         # TODO добавить обработку ошибок
 
     elif state_name == 'deleting_in_timetable':
         line = users_db.select_user(user_id=user_id)
-        timetable = json.loads(line[2])
+        timetable = line[2]
         for day in text.split(', ') if ', ' in text else text.split():
             try:
                 if str(transfer_1[day.lower()]) in timetable:
@@ -238,7 +238,7 @@ async def correction_db(message: types.Message, state: FSMContext):
         if not timetable:
             msg.append('~ ~ ~ Пусто ~ ~ ~')
 
-        users_db.update_data(user_id=user_id, change=('timetable', json.dumps(timetable)))
+        users_db.update_data(user_id=user_id, timetable=timetable)
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer('\n'.join(msg), reply_markup=a_edit_users_db)
 
@@ -246,7 +246,7 @@ async def correction_db(message: types.Message, state: FSMContext):
         # TODO добавить обработку ошибок
         try:
             line = users_db.select_user(user_id=user_id)
-            timetable = json.loads(line[2])
+            timetable = line[2]
             for new in text.split(', '):
                 day, time = new.split()
                 if day.lower() in transfer_1:
@@ -265,7 +265,7 @@ async def correction_db(message: types.Message, state: FSMContext):
         if not timetable:
             msg.append('~ ~ ~ Пусто ~ ~ ~')
 
-        users_db.update_data(user_id=user_id, change=('timetable', json.dumps(timetable)))
+        users_db.update_data(user_id=user_id, timetable=timetable)
         await state.set_state('selection_for_editing_in_the_UsersInfo')
         await message.answer('\n'.join(msg), reply_markup=a_edit_users_db)
 
