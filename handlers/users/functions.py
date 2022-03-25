@@ -67,6 +67,4 @@ async def watch_notifications(dp, delay=5):
                     kwargs = dict(name=name, time=f'{lesson_time.hour}:{lesson_time.minute}')
                     await dp.bot.send_message(
                         user_id, notifications[randint(0, len(notifications)-1)].format(**kwargs))
-                print(time_before_lesson)
-        print(1)
         await asyncio.sleep(delay*60)
