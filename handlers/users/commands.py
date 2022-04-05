@@ -12,7 +12,7 @@ from keyboards.default import u_menu, a_menu
 from keyboards.default import AdminButtons, UserButtons
 
 
-# общий хендлер
+# общий handler
 @dp.message_handler(Command('state'), IsPrivate(), state='*')
 async def test_states(message: types.Message, state: FSMContext):
     """Информирует пользователя или админа о текущем сценарии и FSM данных"""
@@ -76,6 +76,12 @@ async def whats_new(message: types.Message):
         await message.answer(file.read())
 
 
+@dp.message_handler(Command('timetable'), IsPrivate(), state='*')
+async def timetable(message: types.Message):
+    msg = ['Вот твоё расписание на ближайшую неделю:']
+    # for day, time, _ in zip(, , range(7)):
+    #     msg.append(f'{day}: {time}')
+
 # =================================================================================================
 # ============================================== ADMINS ===========================================
 # =================================================================================================
@@ -89,7 +95,7 @@ async def help_for_admin(message: types.Message):
         '/menu - Показать меню',
         '/state - Проверить состояние',
         '/users - Показать id пользователей',
-        '/variants - Показать id вариантов'
+        '/variants - Показать id вариантов',
     ]
     await message.answer('\n'.join(text))
 

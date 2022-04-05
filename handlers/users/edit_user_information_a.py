@@ -2,6 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from filters import IsPrivate
+from handlers.users._points_transfer import transfer_1, transfer_2
 from keyboards.default import a_menu, a_cancel_1, a_edit_timetable_or_achievements, a_yes_or_not, a_edit_users_db, \
     AdminButtons, UserButtons
 from loader import dp, users_db
@@ -175,12 +176,6 @@ async def correction_db(message: types.Message, state: FSMContext):
     data = await state.get_data()
     user_id = data['student_id']
     name = data['student_name']
-
-    transfer_1 = {'пн': 0, 'вт': 1, 'ср': 2, 'чт': 3, 'пт': 4, 'сб': 5, 'вс': 6, 'понедельник': 0, 'вторник': 1,
-                  'среда': 2, 'четверг': 3, 'пятница': 4, 'суббота': 5, 'воскресенье': 6}
-    transfer_2 = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
-    transfer_3 = {'пн': 'Понедельник', 'вт': 'Вторник', 'ср': 'Среда', 'чт': 'Четверг',
-                  'пт': 'Пятница', 'сб': 'Суббота', 'вс': 'Воскресенье'}
 
     if state_name == 'editing_name':
         try:

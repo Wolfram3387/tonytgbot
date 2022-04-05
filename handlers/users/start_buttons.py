@@ -1,5 +1,3 @@
-import json
-
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContext
 

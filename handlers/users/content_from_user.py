@@ -25,7 +25,6 @@ async def get_photo(message: types.Message, state: FSMContext):
         if 'photo_ids' not in user_data:
             new_photo_ids = [photo_id]
             await state.update_data(photo_ids=new_photo_ids)
-            # await state.set_state('repeat_oge_files_input')
         else:
             new_photo_ids = user_data['photo_ids']
             new_photo_ids.append(photo_id)
@@ -167,12 +166,9 @@ async def send_statistic(message: types.Message, state: FSMContext):
         )
 
 
-@dp.message_handler(IsNotAdmin(), IsPrivate(), content_types=['document', 'photo', 'text'], state=[
-    'other_files_to_check', 'repeat_other_files_to_check'
-])
+@dp.message_handler(IsNotAdmin(), IsPrivate(), content_types=['document', 'photo', 'text'], state='other_files_to_check')
 async def send_statistic(message: types.Message, state: FSMContext):
     content_type = message.content_type
-    name = message.from_user.full_name.title()
     text = message.text
     user_data = await state.get_data()
     variant_title = user_data['variant_title']
@@ -220,21 +216,18 @@ async def send_statistic(message: types.Message, state: FSMContext):
         await message.answer(text, reply_markup=u_menu)
         return
 
-    state_name = await state.get_state()
-    line = variants_db.select_variant(title=variant_title, variant_id=variant_id)
-
     if content_type == 'photo':
         if message.photo[-1].file_size > 20971520:  # 20971520 = 20 * 1024 * 1024 = 20 * 2^20 - перевод в байты
             await message.reply('Фото превышает 20 Мб')
             return
         photo_id = message.photo[-1].file_id
-
-        if state_name == 'other_files_to_check':
-            await state.set_state('repeat_other_files_to_check')
-            await state.update_data(photo_ids=[photo_id])
-        elif state_name == 'repeat_other_files_to_check':
-            user_data['photo_ids'].append(photo_id)
-            await state.update_data(photo_ids=user_data['photo_ids'])
+        if 'photo_ids' not in user_data:
+            new_photo_ids = [photo_id]
+            await state.update_data(photo_ids=new_photo_ids)
+        else:
+            new_photo_ids = user_data['photo_ids']
+            new_photo_ids.append(photo_id)
+            await state.update_data(photo_ids=new_photo_ids)
 
         await message.reply('Фото успешно загружено', reply_markup=u_finish_entering)
 
@@ -244,21 +237,18 @@ async def send_statistic(message: types.Message, state: FSMContext):
             return
         file_id = message.document.file_id
 
-        if state_name == 'other_files_to_check':
-            await state.set_state('repeat_other_files_to_check')
-            await state.update_data(file_ids=[file_id])
-        elif state_name == 'repeat_other_files_to_check':
-            user_data['file_ids'].append(file_id)
-            await state.update_data(photo_ids=user_data['file_ids'])
+        if 'file_ids' not in user_data:
+            new_file_ids = [file_id]
+            await state.update_data(file_ids=new_file_ids)
+        else:
+            new_file_ids = user_data['file_ids']
+            new_file_ids.append(file_id)
+            await state.update_data(file_ids=new_file_ids)
 
         await message.reply('Файл успешно загружен', reply_markup=u_finish_entering)
-    if state_name == 'other_files_to_check':
-        await state.set_state('repeat_other_files_to_check')
 
 
-@dp.message_handler(IsNotAdmin(), IsPrivate(), content_types=['document', 'photo', 'text'], state=[
-    'oge_files_input', 'repeat_oge_files_input'
-])
+@dp.message_handler(IsNotAdmin(), IsPrivate(), content_types=['document', 'photo', 'text'], state='oge_files_input')
 async def send_statistic(message: types.Message, state: FSMContext):
     content_type = message.content_type
     name = message.from_user.full_name.title()
@@ -330,7 +320,6 @@ async def send_statistic(message: types.Message, state: FSMContext):
         if 'photo_ids' not in user_data:
             new_photo_ids = [photo_id]
             await state.update_data(photo_ids=new_photo_ids)
-            # await state.set_state('repeat_oge_files_input')
         else:
             new_photo_ids = user_data['photo_ids']
             new_photo_ids.append(photo_id)
@@ -347,7 +336,6 @@ async def send_statistic(message: types.Message, state: FSMContext):
         if 'file_ids' not in user_data:
             new_file_ids = [file_id]
             await state.update_data(file_ids=new_file_ids)
-            # await state.set_state('repeat_oge_files_input')
         else:
             new_file_ids = user_data['file_ids']
             new_file_ids.append(file_id)
