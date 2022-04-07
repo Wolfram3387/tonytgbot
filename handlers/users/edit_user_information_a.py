@@ -10,7 +10,8 @@ from data.config import admins
 
 
 @dp.message_handler(IsPrivate(), user_id=admins, state='selection_for_editing_in_the_UsersInfo', text=[
-    AdminButtons.name, 'Валюта 1', 'Валюта 2', AdminButtons.preparing_for, AdminButtons.achievements, AdminButtons.timetable, AdminButtons.delete_user, UserButtons.menu
+    AdminButtons.name, 'Валюта 1', 'Валюта 2', AdminButtons.preparing_for, AdminButtons.achievements,
+    AdminButtons.timetable, AdminButtons.delete_user, AdminButtons.menu
 ])
 async def correction_db(message: types.Message, state: FSMContext):
     text = message.text
