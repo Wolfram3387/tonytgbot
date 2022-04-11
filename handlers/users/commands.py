@@ -43,8 +43,8 @@ async def help_for_user(message: types.Message):
 @dp.message_handler(CommandStart(), IsNotAdmin(), IsPrivate(), state='*')
 async def start_for_user(message: types.Message, state: FSMContext):
     """Команда /start для пользователя"""
-    await state.finish()
-    await message.answer(f'Привет, {message.from_user.full_name}!', reply_markup=u_menu)
+    with open('command_start.txt') as file:
+        await message.answer(file.read().format(name=message.from_user.full_name), reply_markup=u_menu)
     try:
         users_db.add_user(
             user_id=message.from_user.id,

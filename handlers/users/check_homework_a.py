@@ -223,7 +223,7 @@ async def correction_db(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(IsPrivate(), user_id=admins, content_types=['text'], state='enter_id_to_check_oge')
-async def correction_db(message: types.Message, state: FSMContext):
+async def correction_db(message: types.Message, state: FSMContext):    # TODO ФУНКЦИЯ ВЫДАЁТ ОШИБКУ!
     """Ввод id пользователя для поиска его непроверенных работ ОГЭ"""
     text = message.text
 
@@ -234,6 +234,7 @@ async def correction_db(message: types.Message, state: FSMContext):
 
     try:
         line = users_db.select_user(user_id=int(text))
+        user_id = line[0]
         name = line[1]
         requests = line[9]
         assert any(key.startswith('oge_') for key in requests)
@@ -295,6 +296,7 @@ async def correction_db(message: types.Message, state: FSMContext):
 
     try:
         line = users_db.select_user(user_id=int(text))
+        user_id = line[0]
         name = line[1]
         requests = line[9]
         assert any(key.startswith('prog_') for key in requests)
@@ -325,6 +327,9 @@ async def correction_db(message: types.Message, state: FSMContext):
 
             await message.answer(f'Отправьте мне количество решённых задач ученика {name} в формате:\n3/4\n(что'
                                  f' означает, решено 3 из 4 задач)', reply_markup=a_cancel_1)
+
+            del requests[key]
+            users_db.update_data(user_id=user_id, requests=requests)
             return
 
 
@@ -338,7 +343,8 @@ async def correction_db(message: types.Message, state: FSMContext):
         return
 
     try:
-        line = users_db.select_user(user_id=int(text))
+        line = users_db.select_user(user_id=text)
+        user_id = line[0]
         name = line[1]
         requests = line[9]
         assert any(key.startswith('ege_') for key in requests)
@@ -382,6 +388,8 @@ async def correction_db(message: types.Message, state: FSMContext):
                 if photo_id:
                     await bot.send_photo(admin_id, photo_id)
 
+            del requests[key]
+            users_db.update_data(user_id=user_id, requests=requests)
             return
 
 
